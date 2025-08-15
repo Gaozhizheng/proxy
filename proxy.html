@@ -3,134 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>加载中...</title>
-  <meta name="robots" content="noindex,nofollow" />
+  <title>FLUX图像生成器</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { 
-      width: 100%; 
-      height: 100%; 
-      overflow: hidden; 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-      background: #f8f9fa; 
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
       color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     /* 加载层：全屏居中 */
-    #loading { 
-      position: fixed; 
-      top: 0; left: 0; 
-      width: 100%; height: 100%; 
-      background: #ffffff; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: center; 
-      align-items: center; 
-      z-index: 9999; 
-      text-align: center;
-      padding: 20px;
-    }
-
-    /* 旋转圆圈 */
-    .spinner { 
-      width: 50px; 
-      height: 50px; 
-      border: 4px solid #e9e9e9; 
-      border-top: 4px solid #007bff; 
-      border-radius: 50%; 
-      animation: spin 1s linear infinite; 
-      margin-bottom: 16px;
-    }
-
-    @keyframes spin { 
-      0% { transform: rotate(0deg); } 
-      100% { transform: rotate(360deg); } 
-    }
-
-    .loading-text { 
-      font-size: 15px; 
-      color: #666; 
-      margin-bottom: 12px;
-    }
-
-    .progress-container {
-      width: 80%;
-      max-width: 300px;
-      height: 6px;
-      background: #f0f0f0;
-      border-radius: 3px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .progress-bar {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, #007bff, #00d4ff);
-      border-radius: 3px;
-      transition: width 0.2s ease;
-    }
-
-    .progress-percent {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #888;
-    }
-
-    /* 图片展示容器（默认隐藏） */
-    #imageContainer {
-      display: none;
+    #loading {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 100vh;
+      height: 100%;
+      background: #ffffff;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: #f8f9fa;
+      z-index: 9999;
+      text-align: center;
       padding: 20px;
-      text-align: center;
     }
 
-    #loadedImage {
-      max-width: 90%;
-      max-height: 80vh;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      object-fit: contain;
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e9e9e9;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
     }
 
-    /* 错误提示 */
-    #error { 
-      display: none; 
-      position: fixed; 
-      top: 0; left: 0; 
-      width: 100%; height: 100%; 
-      background: white; 
-      justify-content: center; 
-      align-items: center; 
-      z-index: 10000; 
-      flex-direction: column; 
-      text-align: center;
-      color: #333;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
-    #error p { 
-      font-size: 18px; 
-      margin-bottom: 15px; 
+    iframe {
+      width: 100%;
+      height: 100vh;
+      border: none;
+      opacity: 0;
+      transition: opacity 0.4s ease-in-out;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
     }
 
-    #error button { 
-      padding: 10px 24px; 
-      background: #007bff; 
-      color: white; 
-      border: none; 
-      border-radius: 4px; 
-      cursor: pointer; 
-      font-size: 14px;
-    }
-
-    #error button:hover { 
-      background: #0056b3; 
+    iframe.loaded {
+      opacity: 1;
     }
   </style>
 </head>
@@ -138,109 +75,55 @@
   <!-- 加载中界面 -->
   <div id="loading">
     <div class="spinner"></div>
-    <div class="loading-text">正在加载页面...</div>
-    <div class="progress-container">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-    <div class="progress-percent" id="progressPercent">0%</div>
+    <div class="loading-text">正在为您加载...</div>
   </div>
 
-  <!-- 图片展示界面 -->
-  <div id="imageContainer">
-    <img id="loadedImage" src="https://via.placeholder.com/400x600/ffffff/007bff?text=加载的图片" alt="加载完成">
-    <p style="margin-top:16px; color:#555;">图片已加载完成 ✅</p>
-  </div>
-
-  <!-- 错误提示 -->
-  <div id="error">
-    <p>加载失败</p>
-    <button onclick="retry()">重试</button>
-  </div>
-
-  <!-- iframe（可选，如果您还需要） -->
-  <iframe id="frame" src="about:blank" style="display:none;"></iframe>
+  <!-- 目标页面 iframe -->
+  <iframe id="frame" src="about:blank"></iframe>
 
   <script>
+    // 获取URL中的hash部分，并解码为base64格式的目标链接
     const hash = window.location.hash.slice(1);
+    const frame = document.getElementById('frame');
     const loading = document.getElementById('loading');
-    const error = document.getElementById('error');
-    const progressBar = document.getElementById('progressBar');
-    const progressPercent = document.getElementById('progressPercent');
-    const loadedImage = document.getElementById('loadedImage');
 
-    let progress = 0;
-    let simulated = false;
-
-    function startSimulatedProgress() {
-      if (simulated) return;
-      simulated = true;
-      const interval = setInterval(() => {
-        if (progress >= 95) {
-          clearInterval(interval);
-        } else {
-          progress += Math.random() * 3;
-          progress = Math.min(progress, 95);
-          updateProgress(progress);
-        }
-      }, 100);
+    // 验证并解析目标 URL
+    if (!hash) {
+      alert('缺少目标链接');
+      return;
     }
 
-    function updateProgress(percentage) {
-      progressBar.style.width = `${percentage}%`;
-      progressPercent.textContent = `${Math.round(percentage)}%`;
+    let target;
+    try {
+      target = atob(hash);
+      new URL(target);
+    } catch (e) {
+      alert('链接无效或已过期');
+      return;
     }
 
-    function finishProgress() {
-      updateProgress(100);
+    // 设置 iframe 源
+    frame.src = target;
+
+    // iframe 加载完成
+    frame.onload = () => {
+      loading.style.opacity = 0;
       setTimeout(() => {
+        loading.style.display = 'none';
+        frame.classList.add('loaded');
+      }, 500);
+    };
+
+    // 超时检测（防止卡住）
+    setTimeout(() => {
+      if (!frame.classList.contains('loaded')) {
         loading.style.opacity = 0;
         setTimeout(() => {
           loading.style.display = 'none';
-          frame.style.display = 'none';
-          // 设置图片地址（从 hash 解码）
-          if (hash) {
-            try {
-              loadedImage.src = atob(hash);
-            } catch (e) {
-              loadedImage.src = 'https://via.placeholder.com/400x600/ff0000/ffffff?text=图片加载失败';
-            }
-          }
-          document.getElementById('imageContainer').style.display = 'flex';
+          frame.classList.add('loaded');
         }, 500);
-      }, 200);
-    }
-
-    // 验证链接
-    if (!hash) {
-      error.querySelector('p').textContent = '缺少目标链接';
-      error.style.display = 'flex';
-    } else {
-      try {
-        const target = atob(hash);
-        new URL(target);
-        startSimulatedProgress();
-        setTimeout(finishProgress, 2000); // 模拟加载时间
-      } catch (e) {
-        error.querySelector('p').textContent = '链接无效';
-        error.style.display = 'flex';
       }
-    }
-
-    function showError(msg) {
-      loading.style.display = 'none';
-      error.style.display = 'flex';
-      error.querySelector('p').textContent = msg;
-    }
-
-    function retry() {
-      progress = 0;
-      updateProgress(0);
-      loading.style.display = 'flex';
-      loading.style.opacity = 1;
-      error.style.display = 'none';
-      startSimulatedProgress();
-      setTimeout(finishProgress, 2000);
-    }
+    }, 12000);
   </script>
 </body>
 </html>
