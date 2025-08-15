@@ -3,96 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>页面加载中...</title>
-  <meta name="description" content="正在跳转至目标页面" />
+  <title>加载中...</title>
   <meta name="robots" content="noindex,nofollow" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; color: #333; }
-    #loading {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
-    }
-    .logo { width: 60px; height: 60px; margin-bottom: 20px; border-radius: 50%; background: #0070f3; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; font-weight: bold; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #0070f3; border-radius: 50%; animation: spin 1s linear infinite; }
+    body, html { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, sans-serif; background: #fff; }
+    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #333; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .loading-text { margin-top: 15px; font-size: 16px; color: #555; }
-    iframe { width: 100%; height: 100vh; border: none; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.3s; z-index: 1; }
+    .loading-text { margin-top: 15px; color: #666; }
+    iframe { width: 100%; height: 100vh; border: none; opacity: 0; transition: opacity 0.3s; position: absolute; top: 0; left: 0; }
     iframe.loaded { opacity: 1; }
-    #error { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; padding: 20px; text-align: center; }
-    #error h2 { color: #d9534f; margin-bottom: 10px; }
-    #error p { color: #666; margin-bottom: 20px; max-width: 80%; line-height: 1.6; }
-    #error button { padding: 10px 20px; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-    #error button:hover { background: #0056b3; }
+    #error { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; justify-content: center; align-items: center; z-index: 10000; flex-direction: column; }
+    #error button { margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
   <div id="loading">
-    <div class="logo">🔗</div>
     <div class="spinner"></div>
-    <div class="loading-text">正在加载目标页面...</div>
+    <div class="loading-text">页面加载中...</div>
   </div>
   <div id="error">
-    <h2>加载失败</h2>
-    <p>目标网站可能不允许嵌入，或网络连接异常。</p>
+    <p>加载失败</p>
     <button onclick="retry()">重试</button>
   </div>
-  <iframe id="content-frame" src="about:blank"></iframe>
+  <iframe id="frame" src="about:blank"></iframe>
 
   <script>
-    function getUrlParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name);
+    // 从 URL Hash 获取目标（如 #aHR0cHM6Ly9iYWlkdS5jb20=）
+    const hash = window.location.hash.slice(1); // 去掉 #
+    const frame = document.getElementById('frame');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+
+    if (!hash) {
+      showError('缺少目标链接');
+      exit;
     }
 
-    window.onload = function () {
-      const target = getUrlParam('url') || getUrlParam('target');
-      const frame = document.getElementById('content-frame');
-      const loading = document.getElementById('loading');
-      const errorBox = document.getElementById('error');
+    let target;
+    try {
+      target = atob(hash); // Base64 解码
+      new URL(target); // 验证是否为合法 URL
+    } catch (e) {
+      showError('链接无效或已过期');
+      exit;
+    }
 
-      if (!target) {
-        showError('缺少目标链接，请检查参数。');
-        return;
-      }
+    frame.src = target;
 
-      // 验证 URL 格式
-      try {
-        new URL(target);
-      } catch (e) {
-        showError('目标链接格式无效。');
-        return;
-      }
-
-      frame.src = target;
-
-      frame.onload = function () {
-        setTimeout(() => {
-          loading.style.opacity = 0;
-          setTimeout(() => loading.style.display = 'none', 500);
-          frame.classList.add('loaded');
-        }, 300);
-      };
-
-      frame.onerror = () => showError('iframe 加载出错。');
-
-      setTimeout(() => {
-        if (frame.src !== 'about:blank' && !frame.classList.contains('loaded')) {
-          showError('加载超时，请稍后重试。');
-        }
-      }, 10000);
+    frame.onload = () => {
+      loading.style.opacity = 0;
+      setTimeout(() => loading.style.display = 'none', 500);
+      frame.classList.add('loaded');
     };
 
+    frame.onerror = () => showError('加载出错');
+
+    setTimeout(() => {
+      if (!frame.classList.contains('loaded')) {
+        showError('加载超时');
+      }
+    }, 10000);
+
     function showError(msg) {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('error').style.display = 'flex';
-      document.getElementById('error').querySelector('p').textContent = msg;
+      loading.style.display = 'none';
+      error.style.display = 'flex';
+      error.querySelector('p').textContent = msg;
     }
 
     function retry() {
-      const frame = document.getElementById('content-frame');
       frame.src = frame.src;
-      document.getElementById('error').style.display = 'none';
-      document.getElementById('loading').style.display = 'flex';
+      error.style.display = 'none';
+      loading.style.display = 'flex';
     }
   </script>
 </body>
