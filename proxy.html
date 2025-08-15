@@ -335,6 +335,36 @@
       border: 0;
     }
     
+    /* 暗色模式支持 */
+    @media (prefers-color-scheme: dark) {
+      .image-info {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+        color: #e2e8f0;
+        border: 1px solid rgba(71, 85, 105, 0.5);
+      }
+      
+      .info-label {
+        color: #94a3b8;
+      }
+      
+      .info-value {
+        color: #f1f5f9;
+      }
+      
+      .info-value.highlight {
+        color: #60a5fa;
+        background: rgba(96, 165, 250, 0.15);
+      }
+      
+      .info-item:hover {
+        background: rgba(96, 165, 250, 0.1);
+      }
+      
+      .info-divider {
+        background: linear-gradient(90deg, transparent, rgba(71, 85, 105, 0.4), transparent);
+      }
+    }
+    
     /* 高对比度模式支持 */
     @media (prefers-contrast: high) {
       .controls {
@@ -351,6 +381,20 @@
       .control-btn:hover {
         background: #000;
         color: #fff;
+      }
+      
+      .image-info {
+        background: #fff;
+        color: #000;
+        border: 2px solid #000;
+      }
+      
+      .info-label {
+        color: #000;
+      }
+      
+      .info-value {
+        color: #000;
       }
     }
     
@@ -372,24 +416,135 @@
       }
     }
 
-    /* 图片信息显示 */
+    /* 图片信息显示 - 美观的卡片式设计 */
     .image-info {
       position: fixed;
-      top: 20px;
-      left: 20px;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 12px;
-      backdrop-filter: blur(10px);
+      top: 24px;
+      left: 24px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+      color: #1e293b;
+      padding: 16px 20px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.8);
       z-index: 1000;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transform: translateY(-8px) scale(0.95);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      min-width: 200px;
+      max-width: 280px;
+      animation: slideInBounce 0.6s ease-out forwards;
+    }
+    
+    @keyframes slideInBounce {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+      }
+      60% {
+        opacity: 0.8;
+        transform: translateY(5px) scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .image-info.show {
       opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    
+    .image-info:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .info-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .info-item:hover {
+      background: rgba(59, 130, 246, 0.08);
+      transform: translateX(2px);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    }
+    
+    .info-item:hover::before {
+      left: 100%;
+    }
+    
+    .info-item:active {
+      transform: translateX(1px) scale(0.98);
+    }
+    
+    .info-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+    
+    .info-label {
+      font-weight: 600;
+      color: #64748b;
+      margin-right: 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.8;
+      min-width: 32px;
+    }
+    
+    .info-value {
+      color: #0f172a;
+      font-weight: 600;
+      font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.4;
+      flex: 1;
+    }
+    
+    .info-value.highlight {
+      color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    
+    .info-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
+      margin: 8px 0;
     }
     
     .help-panel {
@@ -536,8 +691,31 @@
       
       .image-info {
         font-size: 12px;
-        padding: 8px 12px;
-        bottom: 60px;
+        padding: 12px 16px;
+        top: 16px;
+        left: 16px;
+        right: 16px;
+        max-width: none;
+        min-width: auto;
+        border-radius: 12px;
+      }
+      
+      .info-item {
+        margin-bottom: 6px;
+      }
+      
+      .info-icon {
+        width: 14px;
+        height: 14px;
+        margin-right: 6px;
+      }
+      
+      .info-label {
+        font-size: 11px;
+      }
+      
+      .info-value {
+        font-size: 12px;
       }
       
       .image-wrapper {
@@ -673,8 +851,27 @@
     
     <!-- 图片信息 -->
     <div class="image-info" id="imageInfo" role="complementary" aria-label="图片信息面板">
-      <div id="imageSize" aria-live="polite">尺寸: 加载中...</div>
-      <div id="imageFormat" aria-live="polite">格式: 未知</div>
+      <div class="info-item">
+        <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21,15 16,10 5,21"/>
+        </svg>
+        <span class="info-label">尺寸</span>
+        <span class="info-value" id="imageSize" aria-live="polite">加载中...</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item">
+        <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14,2 14,8 20,8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10,9 9,9 8,9"/>
+        </svg>
+        <span class="info-label">格式</span>
+        <span class="info-value" id="imageFormat" aria-live="polite">未知</span>
+      </div>
     </div>
     
     <div id="helpPanel" class="help-panel" role="dialog" aria-labelledby="helpTitle" aria-hidden="true">
@@ -816,20 +1013,25 @@
       const aspectRatio = (width / height).toFixed(2);
       
       const dimensions = `${width} × ${height}`;
-      imageSize.textContent = `尺寸: ${dimensions} (${aspectRatio}:1)`;
+      imageSize.textContent = `${dimensions} (${aspectRatio}:1)`;
       
       // 为屏幕阅读器添加更详细的描述
       img.setAttribute('alt', `图片，尺寸为 ${dimensions} 像素`);
       
       const url = img.src;
       const extension = url.split('.').pop().split('?')[0].toUpperCase();
-      imageFormat.textContent = `格式: ${extension || '未知'}${fileSize ? ` • ${fileSize}` : ''}`;
+      let formatText = extension || '未知';
+      if (fileSize) {
+        formatText += ` • ${fileSize}`;
+      }
       
       // 添加更多信息
       const colorDepth = getColorDepth(img);
       if (colorDepth) {
-        imageFormat.textContent += ` • ${colorDepth}`;
+        formatText += ` • ${colorDepth}`;
       }
+      
+      imageFormat.textContent = formatText;
       
       // 通知屏幕阅读器图片信息已更新
       announceToScreenReader(`图片已加载，尺寸 ${dimensions}，格式 ${extension || '未知'}`);
