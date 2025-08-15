@@ -3,68 +3,206 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>加载中...</title>
+  <title>沙师兄 · 正在跳转</title>
   <meta name="robots" content="noindex,nofollow" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, sans-serif; background: #fff; }
-    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #333; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .loading-text { margin-top: 15px; color: #666; }
-    iframe { width: 100%; height: 100vh; border: none; opacity: 0; transition: opacity 0.3s; position: absolute; top: 0; left: 0; }
+    body, html { 
+      width: 100%; 
+      height: 100%; 
+      overflow: hidden; 
+      font-family: 'Microsoft YaHei', sans-serif; 
+      background: #f0f5ff; 
+      color: #2c3e50;
+    }
+
+    #loading { 
+      position: fixed; 
+      top: 0; left: 0; 
+      width: 100%; height: 100%; 
+      background: #ffffff; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      z-index: 9999; 
+      text-align: center;
+      padding: 20px;
+    }
+
+    .sha-img {
+      width: 100px;
+      height: auto;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(0, 100, 255, 0.15);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .loading-text { 
+      font-size: 16px; 
+      color: #007bff; 
+      margin: 16px 0 8px;
+      font-weight: bold;
+    }
+
+    .progress-container {
+      width: 80%;
+      max-width: 300px;
+      height: 6px;
+      background: #e0e7ff;
+      border-radius: 3px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #007bff, #00d4ff);
+      border-radius: 3px;
+      transition: width 0.2s ease;
+    }
+
+    .progress-percent {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    iframe { 
+      width: 100%; 
+      height: 100vh; 
+      border: none; 
+      opacity: 0; 
+      transition: opacity 0.4s ease-in-out; 
+      position: absolute; 
+      top: 0; left: 0; 
+    }
+
     iframe.loaded { opacity: 1; }
-    #error { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; justify-content: center; align-items: center; z-index: 10000; flex-direction: column; }
-    #error button { margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+
+    #error { 
+      display: none; 
+      position: fixed; 
+      top: 0; left: 0; 
+      width: 100%; height: 100%; 
+      background: white; 
+      justify-content: center; 
+      align-items: center; 
+      z-index: 10000; 
+      flex-direction: column; 
+      text-align: center;
+      color: #333;
+    }
+
+    #error p { 
+      font-size: 18px; 
+      margin-bottom: 15px; 
+    }
+
+    #error button { 
+      padding: 10px 24px; 
+      background: #e74c3c; 
+      color: white; 
+      border: none; 
+      border-radius: 4px; 
+      cursor: pointer; 
+    }
+
+    #error button:hover { 
+      background: #c0392b; 
+    }
   </style>
 </head>
 <body>
   <div id="loading">
-    <div class="spinner"></div>
-    <div class="loading-text">页面加载中...</div>
+    <img src="https://via.placeholder.com/120x120/007bff/ffffff?text=沙师兄" 
+         alt="沙师兄" class="sha-img">
+    <div class="loading-text">沙师兄正在为您跳转...</div>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-percent" id="progressPercent">0%</div>
   </div>
+
   <div id="error">
-    <p>加载失败</p>
-    <button onclick="retry()">重试</button>
+    <p>跳转失败，沙师兄尽力了</p>
+    <button onclick="retry()">让师兄再试一次</button>
   </div>
+
   <iframe id="frame" src="about:blank"></iframe>
 
   <script>
-    // 从 URL Hash 获取目标（如 #aHR0cHM6Ly9iYWlkdS5jb20=）
-    const hash = window.location.hash.slice(1); // 去掉 #
+    const hash = window.location.hash.slice(1);
     const frame = document.getElementById('frame');
     const loading = document.getElementById('loading');
     const error = document.getElementById('error');
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
+
+    let progress = 0;
+    let simulated = false;
+
+    function startSimulatedProgress() {
+      if (simulated) return;
+      simulated = true;
+      const interval = setInterval(() => {
+        if (progress >= 95) {
+          clearInterval(interval);
+        } else {
+          progress += Math.random() * 3;
+          progress = Math.min(progress, 95);
+          updateProgress(progress);
+        }
+      }, 100);
+    }
+
+    function updateProgress(percentage) {
+      progressBar.style.width = `${percentage}%`;
+      progressPercent.textContent = `${Math.round(percentage)}%`;
+    }
+
+    function finishProgress() {
+      updateProgress(100);
+      setTimeout(() => {
+        loading.style.opacity = 0;
+        setTimeout(() => loading.style.display = 'none', 500);
+        frame.classList.add('loaded');
+      }, 200);
+    }
 
     if (!hash) {
-      showError('缺少目标链接');
+      error.querySelector('p').textContent = '缺少目标链接';
+      error.style.display = 'flex';
       exit;
     }
 
     let target;
     try {
-      target = atob(hash); // Base64 解码
-      new URL(target); // 验证是否为合法 URL
+      target = atob(hash);
+      new URL(target);
     } catch (e) {
-      showError('链接无效或已过期');
+      error.querySelector('p').textContent = '链接无效或已过期';
+      error.style.display = 'flex';
       exit;
     }
 
+    startSimulatedProgress();
     frame.src = target;
 
-    frame.onload = () => {
-      loading.style.opacity = 0;
-      setTimeout(() => loading.style.display = 'none', 500);
-      frame.classList.add('loaded');
-    };
-
+    frame.onload = () => finishProgress();
     frame.onerror = () => showError('加载出错');
 
     setTimeout(() => {
       if (!frame.classList.contains('loaded')) {
-        showError('加载超时');
+        finishProgress();
       }
-    }, 10000);
+    }, 12000);
 
     function showError(msg) {
       loading.style.display = 'none';
@@ -73,9 +211,11 @@
     }
 
     function retry() {
-      frame.src = frame.src;
-      error.style.display = 'none';
+      progress = 0;
+      updateProgress(0);
       loading.style.display = 'flex';
+      error.style.display = 'none';
+      frame.src = frame.src;
     }
   </script>
 </body>
