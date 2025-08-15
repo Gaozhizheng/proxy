@@ -11,11 +11,12 @@
       width: 100%; 
       height: 100%; 
       overflow: hidden; 
-      font-family: 'Microsoft YaHei', sans-serif; 
+      font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif; 
       background: #f0f5ff; 
       color: #2c3e50;
     }
 
+    /* 加载层：全屏居中 */
     #loading { 
       position: fixed; 
       top: 0; left: 0; 
@@ -30,12 +31,21 @@
       padding: 20px;
     }
 
-    .sha-img {
-      width: 100px;
-      height: auto;
+    /* 沙师兄图像容器（居中显示） */
+    .sha-container {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 16px;
       border-radius: 50%;
-      box-shadow: 0 4px 12px rgba(0, 100, 255, 0.15);
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0, 100, 255, 0.2);
       animation: float 3s ease-in-out infinite;
+    }
+
+    .sha-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     @keyframes float {
@@ -46,10 +56,11 @@
     .loading-text { 
       font-size: 16px; 
       color: #007bff; 
-      margin: 16px 0 8px;
-      font-weight: bold;
+      margin-bottom: 12px;
+      font-weight: 500;
     }
 
+    /* 进度条容器 */
     .progress-container {
       width: 80%;
       max-width: 300px;
@@ -74,6 +85,7 @@
       color: #666;
     }
 
+    /* iframe 默认隐藏 */
     iframe { 
       width: 100%; 
       height: 100vh; 
@@ -84,8 +96,11 @@
       top: 0; left: 0; 
     }
 
-    iframe.loaded { opacity: 1; }
+    iframe.loaded { 
+      opacity: 1; 
+    }
 
+    /* 错误提示层 */
     #error { 
       display: none; 
       position: fixed; 
@@ -103,6 +118,7 @@
     #error p { 
       font-size: 18px; 
       margin-bottom: 15px; 
+      color: #d35400;
     }
 
     #error button { 
@@ -112,6 +128,7 @@
       border: none; 
       border-radius: 4px; 
       cursor: pointer; 
+      font-size: 14px;
     }
 
     #error button:hover { 
@@ -120,7 +137,11 @@
   </style>
 </head>
 <body>
+  <!-- 加载界面 -->
   <div id="loading">
+    <div class="sha-container">
+      <img src="https://via.placeholder.com/120x120/007bff/ffffff?text=沙师兄" alt="沙师兄">
+    </div>
     <div class="loading-text">沙师兄正在为您跳转...</div>
     <div class="progress-container">
       <div class="progress-bar" id="progressBar"></div>
@@ -128,14 +149,24 @@
     <div class="progress-percent" id="progressPercent">0%</div>
   </div>
 
+  <!-- 错误提示 -->
   <div id="error">
     <p>跳转失败，沙师兄尽力了</p>
     <button onclick="retry()">让师兄再试一次</button>
   </div>
 
+  <!-- 目标页面 iframe -->
   <iframe id="frame" src="about:blank"></iframe>
 
   <script>
+    // 动态 title 动画
+    const baseTitle = "沙师兄 · 正在跳转";
+    let dotCount = 0;
+    const titleTimer = setInterval(() => {
+      dotCount = (dotCount + 1) % 4;
+      document.title = baseTitle + ".".repeat(dotCount);
+    }, 600);
+
     const hash = window.location.hash.slice(1);
     const frame = document.getElementById('frame');
     const loading = document.getElementById('loading');
@@ -153,11 +184,11 @@
         if (progress >= 95) {
           clearInterval(interval);
         } else {
-          progress += Math.random() * 3;
+          progress += Math.random() * 2.5;
           progress = Math.min(progress, 95);
           updateProgress(progress);
         }
-      }, 100);
+      }, 120);
     }
 
     function updateProgress(percentage) {
@@ -166,6 +197,8 @@
     }
 
     function finishProgress() {
+      clearInterval(titleTimer);
+      document.title = "沙师兄 · 加载完成";
       updateProgress(100);
       setTimeout(() => {
         loading.style.opacity = 0;
@@ -174,9 +207,12 @@
       }, 200);
     }
 
+    // 验证并加载目标页面
     if (!hash) {
-      error.querySelector('p').textContent = '缺少目标链接';
+      error.querySelector('p').textContent = '链接未提供';
       error.style.display = 'flex';
+      clearInterval(titleTimer);
+      document.title = "沙师兄 · 错误";
       exit;
     }
 
@@ -187,15 +223,21 @@
     } catch (e) {
       error.querySelector('p').textContent = '链接无效或已过期';
       error.style.display = 'flex';
+      clearInterval(titleTimer);
+      document.title = "沙师兄 · 错误";
       exit;
     }
 
+    // 开始模拟进度
     startSimulatedProgress();
+
+    // 加载 iframe
     frame.src = target;
 
     frame.onload = () => finishProgress();
-    frame.onerror = () => showError('加载出错');
+    frame.onerror = () => showError('加载失败');
 
+    // 超时保护
     setTimeout(() => {
       if (!frame.classList.contains('loaded')) {
         finishProgress();
@@ -203,6 +245,8 @@
     }, 12000);
 
     function showError(msg) {
+      clearInterval(titleTimer);
+      document.title = "沙师兄 · 失败";
       loading.style.display = 'none';
       error.style.display = 'flex';
       error.querySelector('p').textContent = msg;
@@ -213,9 +257,9 @@
       updateProgress(0);
       loading.style.display = 'flex';
       error.style.display = 'none';
+      document.title = baseTitle;
       frame.src = frame.src;
     }
   </script>
 </body>
 </html>
-
