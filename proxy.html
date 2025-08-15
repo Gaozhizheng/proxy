@@ -145,6 +145,10 @@
     <div class="progress-percent" id="progressPercent">0%</div>
   </div>
 
+  <!-- 图片展示界面 -->
+  <div id="imageContainer">
+    <img id="loadedImage" src="https://via.placeholder.com/400x600/ffffff/007bff?text=加载的图片">
+  </div>
 
   <!-- 错误提示 -->
   <div id="error">
@@ -214,7 +218,7 @@
         const target = atob(hash);
         new URL(target);
         startSimulatedProgress();
-        setTimeout(finishProgress, 2000); // 模拟加载时间
+        setTimeout(finishProgress, 1000); // 模拟加载时间
       } catch (e) {
         error.querySelector('p').textContent = '链接无效';
         error.style.display = 'flex';
@@ -239,4 +243,3 @@
   </script>
 </body>
 </html>
-
